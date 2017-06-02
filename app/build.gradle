@@ -67,40 +67,51 @@ android {
 
     // 渠道
     productFlavors {
-        commonsoon {
+       Commonsoon {
             manifestPlaceholders = [UMENG_CHANNEL_VALUE: "commonsoon"]
         }
-        zhushou91 {
+
+        Zhushou91 {
             manifestPlaceholders = [UMENG_CHANNEL_VALUE: "zhushou91"]
         }
-        market360 {
+
+        Market360 {
             manifestPlaceholders = [UMENG_CHANNEL_VALUE: "market360"]
         }
-        xiaomi {
+
+        Xiaomi {
             manifestPlaceholders = [UMENG_CHANNEL_VALUE: "xiaomi"]
         }
-        wandoujia {
+
+        Wandoujia {
             manifestPlaceholders = [UMENG_CHANNEL_VALUE: "wandoujia"]
         }
-        marketandroid {
+
+        Marketandroid {
             manifestPlaceholders = [UMENG_CHANNEL_VALUE: "marketandroid"]
         }
-        yingyonghui {
+
+        Yingyonghui {
             manifestPlaceholders = [UMENG_CHANNEL_VALUE: "yingyonghui"]
         }
-        jifengmarket {
+
+        Jifengmarket {
             manifestPlaceholders = [UMENG_CHANNEL_VALUE: "jifengmarket"]
         }
-        mumayi {
+
+        Mumayi {
             manifestPlaceholders = [UMENG_CHANNEL_VALUE: "mumayi"]
         }
-        anzhimarket {
+
+        Anzhimarket {
             manifestPlaceholders = [UMENG_CHANNEL_VALUE: "anzhimarket"]
         }
-        yingyongbao {
+
+        Yingyongbao {
             manifestPlaceholders = [UMENG_CHANNEL_VALUE: "yingyongbao"]
         }
-        huaweimarket {
+
+        Huaweimarket {
             manifestPlaceholders = [UMENG_CHANNEL_VALUE: "huaweimarket"]
         }
     }
