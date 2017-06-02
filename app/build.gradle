@@ -1,5 +1,14 @@
 apply plugin: 'com.android.application'
 
+// 获取时间戳
+def getDate(){
+    def date = new Date();
+    def formattedDate = date.format('yyyy-MM-dd-HH-mm')
+    return formattedDate
+}
+
+// 版本号
+def verCode = 1
 android {
     compileSdkVersion 25
     buildToolsVersion "25.0.3"
@@ -7,19 +16,148 @@ android {
         applicationId "com.yxhuang.jenkinsdemo"
         minSdkVersion 16
         targetSdkVersion 25
-        versionCode 1
-        versionName "1.0"
+        versionCode verCode
+        versionName APP_VERSION
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
+
+    // 签名信息
+    signingConfigs {
+        release {
+            //由于本地打包使用的是本机上的KeyStore，而Jenkins打包用的是服务器上的KeyStore
+            //两个路径不一样
+            if("true".equals(IS_JENKINS)){
+                storeFile file(KEY_STORE_FILE_PATH_IN_SERVER)
+            }else {
+                storeFile file(KEY_STORE_FILE_PATH_IN_LOCAL)
+            }
+        }
+
+        debug{
+
+        }
+    }
+
+
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
 
         debug {
 
         }
+    }
+
+
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES.txt'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/dependencies.txt'
+        exclude 'META-INF/LGPL2.1'
+    }
+
+    // 渠道
+    productFlavors {
+        commonsoon {
+            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "commonsoon"]
+        }
+        zhushou91 {
+            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "zhushou91"]
+        }
+        market360 {
+            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "market360"]
+        }
+        xiaomi {
+            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "xiaomi"]
+        }
+        wandoujia {
+            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "wandoujia"]
+        }
+        marketandroid {
+            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "marketandroid"]
+        }
+        yingyonghui {
+            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "yingyonghui"]
+        }
+        jifengmarket {
+            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "jifengmarket"]
+        }
+        mumayi {
+            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "mumayi"]
+        }
+        anzhimarket {
+            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "anzhimarket"]
+        }
+        yingyongbao {
+            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "yingyongbao"]
+        }
+        huaweimarket {
+            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "huaweimarket"]
+        }
+    }
+
+    //修改生成的apk名字
+    applicationVariants.all { variant ->
+        variant.outputs.each { output ->
+            // 新名称
+            def newName
+            // 时间戳
+            def timeNow
+            // 输出路径
+            def outDirectory;
+
+            if ("true".equals(IS_JENKINS)) {   // 服务器打包
+                timeNow = BUILD_TIME
+                outDirectory = BUILD_PATH_IN_SERVER
+                newName = 'android-v' + APP_VERSION + '-' + variant.productFlavors[0].name + '-' +  timeNow + '-' + variant.buildType.name + '.apk'
+            } else {    // 本机打包
+                timeNow = getDate()
+                outDirectory = output.outputFile.getParent()
+                if (variant.buildType.name.equals('debug')) {
+                    newName = "android-v${APP_VERSION}-debug.apk"
+                } else {
+                    newName = 'android-v' + APP_VERSION + '-' + variant.productFlavors[0].name + '-' + timeNow + '-' + variant.buildType.name + '.apk'
+                }
+            }
+
+            output.outputFile = new File(outDirectory + '/' + timeNow , newName)
+
+        }
+    }
+
+}
+
+// 定义一个任务来获取 Release Password
+task getReleasePassword << {
+    def keypassword = ''
+    def storepassword = ''
+    def keyalies = ''
+    if (rootProject.file('private.properties').exists()){
+        Properties properties = new Properties();
+        properties.load(rootProject.file('private.properties').newDataInputStream())
+        keypassword = properties.getProperty('release.password')
+        storepassword = properties.getProperty('release.storepassword')
+        keyalies = properties.getProperty('release.keyalies')
+    }
+
+    android.signingConfigs.release.keyPassword = keypassword
+    android.signingConfigs.release.storePassword = storepassword
+    android.signingConfigs.release.keyAlias = keyalies
+}
+
+// 运行时才添加，相当于 Hook
+tasks.whenTaskAdded { theTask ->
+    if (theTask.name.contains("Release")){
+        theTask.dependsOn "getReleasePassword"
     }
 }
 
